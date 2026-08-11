@@ -21,6 +21,11 @@ interface HeroComponent {
 
 type HeroItem = HeroComponent | HeroText;
 
+const speed = defineModel('speed', {
+  type: Number,
+  required: true,
+});
+
 const items = ref<HeroItem[]>([
   {
     type: 'text',
@@ -75,7 +80,7 @@ function mouseUp() {
 
 let lastMousePosition: Position | null = null;
 const speedConstant = 5.0;
-let speed = 5;
+// let speed = 5;
 const accelerationConstant = 100.0;
 const resistanceConstant = 0.02;
 const speedImpact = ref(speed);
@@ -100,9 +105,9 @@ function moveFrame(event: MouseEvent) {
   isDragging.value = true;
 
   const acceleration = accelerationConstant * (delta.x / window.innerWidth);
-  speed += acceleration;
+  speed.value += acceleration;
   speedImpact.value = Math.min(
-    Math.max(Math.abs(speed / 5), speedConstant),
+    Math.max(Math.abs(speed.value / 5), speedConstant),
     45
   );
 
@@ -119,17 +124,17 @@ onMounted(() => {
     if (!SliderContent.value) return;
 
     SliderContent.value.scrollTo({
-      left: SliderContent.value.scrollLeft + speed,
+      left: SliderContent.value.scrollLeft + speed.value,
     });
 
     if (
-      speed - resistanceConstant * speed > speedConstant ||
-      speed - resistanceConstant * speed < -speedConstant
+      speed.value - resistanceConstant * speed.value > speedConstant ||
+      speed.value - resistanceConstant * speed.value < -speedConstant
     )
-      speed -= resistanceConstant * speed;
+      speed.value -= resistanceConstant * speed.value;
 
     speedImpact.value = Math.min(
-      Math.max(Math.abs(speed / 5), speedConstant),
+      Math.max(Math.abs(speed.value / 5), speedConstant),
       45
     );
 
@@ -163,7 +168,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
+  <div class="z-50 relative">
     <svg style="display: none">
       <filter id="horizontal-blur">
         <feGaussianBlur
