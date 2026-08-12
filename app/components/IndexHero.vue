@@ -21,16 +21,17 @@ interface HeroComponent {
 
 type HeroItem = HeroComponent | HeroText;
 
-const speed = defineModel('speed', {
-  type: Number,
-  required: true,
-});
+const emit = defineEmits<{
+  updateSpeed: [speed: number];
+}>();
+
+let speed = 5;
 
 const items = ref<HeroItem[]>([
   {
     type: 'text',
-    title: 'Projects',
-    path: '/projects',
+    title: 'WERS',
+    path: '/',
   },
   {
     type: 'component',
@@ -38,8 +39,8 @@ const items = ref<HeroItem[]>([
   },
   {
     type: 'text',
-    title: 'About',
-    path: '/about',
+    title: 'COMING',
+    path: '/',
   },
   {
     type: 'component',
@@ -47,21 +48,12 @@ const items = ref<HeroItem[]>([
   },
   {
     type: 'text',
-    title: 'Contact',
-    path: '/contact',
+    title: 'SOON',
+    path: '/',
   },
   {
     type: 'component',
     component: h(Icon, { name: 'ic:round-wb-cloudy' }),
-  },
-  {
-    type: 'text',
-    title: 'Support',
-    path: '/support',
-  },
-  {
-    type: 'component',
-    component: h(Icon, { name: 'ic:round-favorite' }),
   },
 ]);
 
@@ -105,11 +97,13 @@ function moveFrame(event: MouseEvent) {
   isDragging.value = true;
 
   const acceleration = accelerationConstant * (delta.x / window.innerWidth);
-  speed.value += acceleration;
+  speed += acceleration;
+  emit('updateSpeed', speed);
   speedImpact.value = Math.min(
-    Math.max(Math.abs(speed.value / 5), speedConstant),
+    Math.max(Math.abs(speed / 5), speedConstant),
     45
   );
+  console.log(speed);
 
   lastMousePosition = {
     x: event.clientX,
@@ -124,17 +118,19 @@ onMounted(() => {
     if (!SliderContent.value) return;
 
     SliderContent.value.scrollTo({
-      left: SliderContent.value.scrollLeft + speed.value,
+      left: SliderContent.value.scrollLeft + speed,
     });
 
     if (
-      speed.value - resistanceConstant * speed.value > speedConstant ||
-      speed.value - resistanceConstant * speed.value < -speedConstant
-    )
-      speed.value -= resistanceConstant * speed.value;
+      speed - resistanceConstant * speed > speedConstant ||
+      speed - resistanceConstant * speed < -speedConstant
+    ) {
+      speed -= resistanceConstant * speed;
+      emit('updateSpeed', speed);
+    }
 
     speedImpact.value = Math.min(
-      Math.max(Math.abs(speed.value / 5), speedConstant),
+      Math.max(Math.abs(speed / 5), speedConstant),
       45
     );
 
@@ -168,7 +164,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="z-50 relative">
+  <div class="z-50 relative top-0 left-0">
     <svg style="display: none">
       <filter id="horizontal-blur">
         <feGaussianBlur
@@ -199,11 +195,6 @@ onMounted(() => {
           <button
             :data-drag="isDragging"
             class="relative group/hero-item-text scale-100 data-[drag=false]:active:scale-90 transition-all focus-visible:outline-0 data-[drag=false]:cursor-pointer"
-            @mouseup="
-              () => {
-                if (!isDragging) $router.push(item.path);
-              }
-            "
           >
             {{ item.title }}
             <div

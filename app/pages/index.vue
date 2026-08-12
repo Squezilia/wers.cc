@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import { Mouse } from '@lucide/vue';
+import { Heart } from '@lucide/vue';
 
 const speed = ref(5);
+
+function speedUpdate(updated: number) {
+  speed.value = updated;
+}
 </script>
 
 <template>
   <div>
-    <IndexHero v-model:speed="speed" />
-    <!-- <ClientOnly>
-      <HeroBackgroundGL />
-    </ClientOnly> -->
-    <HeroBackground v-model:speed="speed" />
+    <IndexHero @update-speed="speedUpdate" />
+    <ClientOnly>
+      <HeroBackgroundGL v-model:speed="speed" />
+    </ClientOnly>
     <div
       class="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2.5 text-sm"
     >
-      <Mouse class="size-4" /> Scroll to Read Blog
+      Made by humans with <Heart class="size-4" />
     </div>
   </div>
 </template>
