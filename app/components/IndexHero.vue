@@ -30,30 +30,39 @@ let speed = 5;
 const items = ref<HeroItem[]>([
   {
     type: 'text',
-    title: 'WERS',
+    title: 'COMING SOON',
     path: '/',
   },
   {
     type: 'component',
-    component: h(Icon, { name: 'ph:star-four-fill' }),
+    component: h(Icon, { name: 'ic:sharp-favorite' }),
   },
   {
     type: 'text',
-    title: 'COMING',
+    title: 'WERS.CC',
     path: '/',
   },
   {
     type: 'component',
-    component: h(Icon, { name: 'ic:round-dark-mode' }),
+    component: h(Icon, { name: 'ic:sharp-favorite' }),
   },
   {
     type: 'text',
-    title: 'SOON',
+    title: 'COMING SOON',
     path: '/',
   },
   {
     type: 'component',
-    component: h(Icon, { name: 'ic:round-wb-cloudy' }),
+    component: h(Icon, { name: 'ic:sharp-favorite' }),
+  },
+  {
+    type: 'text',
+    title: 'WERS.CC',
+    path: '/',
+  },
+  {
+    type: 'component',
+    component: h(Icon, { name: 'ic:sharp-favorite' }),
   },
 ]);
 
@@ -153,7 +162,8 @@ onMounted(() => {
         left: SliderContent.value.scrollLeft + cellSize,
       });
       if (!popped) return;
-      items.value = [popped, ...items.value];
+      items.value.unshift(popped);
+      // items.value = [popped, ...items.value];
     }
 
     requestAnimationFrame(requestFrame);
@@ -164,7 +174,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="z-50 relative top-0 left-0">
+  <div
+    class="z-50 relative top-0 left-0 max-w-screen max-h-screen overflow-hidden"
+  >
     <svg style="display: none">
       <filter id="horizontal-blur">
         <feGaussianBlur
@@ -174,7 +186,7 @@ onMounted(() => {
     </svg>
     <div
       ref="SliderContent"
-      class="min-w-screen w-auto max-w-none h-screen flex items-center overflow-hidden relative"
+      class="w-auto max-w-none h-screen flex items-center overflow-hidden relative"
       @mousedown="mouseDown"
       @mouseup="mouseUp"
       @mousemove="moveFrame"
@@ -183,18 +195,20 @@ onMounted(() => {
         v-for="(item, index) of items"
         :key="index"
         :class="
-          cn(`shrink-0 font-slider text-9xl text-center select-none w-[70%]`)
+          cn(
+            `shrink-0 font-slider text-9xl text-center select-none w-[70%] transition-[font-weight]`
+          )
         "
         :style="{
           transform: `skew(${-speedImpact}deg)`,
-          fontWeight: `${400 + Math.max(speedImpact - 6, 0) * 100}`,
+          fontWeight: `${400 + +(('' + Math.min(Math.max(speedImpact - 6, 0), 3) * 100)[0] + '00')}`,
           filter: 'url(#horizontal-blur)',
         }"
       >
         <template v-if="item.type === 'text'">
           <button
             :data-drag="isDragging"
-            class="relative group/hero-item-text scale-100 data-[drag=false]:active:scale-90 transition-all focus-visible:outline-0 data-[drag=false]:cursor-pointer"
+            class="relative group/hero-item-text scale-100 data-[drag=false]:active:scale-90 transition-all focus-visible:outline-0 data-[drag=false]:cursor-pointer whitespace-nowrap"
           >
             {{ item.title }}
             <div

@@ -2,6 +2,7 @@
 import vertexShader from '@/assets/glsl/background_vertex.glsl';
 import fragmentShader from '@/assets/glsl/background_fragment.glsl';
 import { Simplex, patchShaders } from 'gl-noise';
+import { useColorMode } from '@vueuse/core';
 
 interface ProgramInfo {
   program: WebGLProgram;
@@ -11,8 +12,17 @@ interface ProgramInfo {
   uniformLocations: {
     uResolution: WebGLUniformLocation | null;
     uPositionOffset: WebGLUniformLocation | null;
+    uBlendColor: WebGLUniformLocation | null;
+    uTime: WebGLUniformLocation | null;
   };
 }
+
+type vec4 = [number, number, number, number];
+
+const blendColor: vec4 =
+  useColorMode().state.value == 'dark'
+    ? [0.24, 0.42, 1.0, 1.0]
+    : [0.1, 0.16, 0.44, 1.0];
 
 const speed = defineModel('speed', {
   type: Number,
@@ -24,13 +34,16 @@ const width = ref(0);
 const height = ref(0);
 const horizontalPosition = ref(0);
 
+let time = 0;
+let lastRenderedAt = Date.now();
+
 const [readyVertexShader, readyFragmentShader] = patchShaders(
   [vertexShader, fragmentShader],
   [[], [Simplex]]
 );
 
 function getContext(canvas: HTMLCanvasElement) {
-  return canvas.getContext('webgl2');
+  return canvas.getContext('webgl2', { alpha: true });
 }
 
 function loadShader(
@@ -67,6 +80,9 @@ function render(
   horizontalPosition.value += speed.value;
 
   drawScene(ctx, programInfo, buffers);
+
+  time += Date.now() - lastRenderedAt;
+  lastRenderedAt = Date.now();
 
   requestAnimationFrame(() => render(ctx, programInfo, buffers));
 }
@@ -144,9 +160,10 @@ function drawScene(
   const canvasWidth = CanvasElement.value?.width ?? width.value;
   const canvasHeight = CanvasElement.value?.height ?? height.value;
   ctx.viewport(0, 0, canvasWidth, canvasHeight);
-  ctx.clearColor(0.0, 0.0, 0.0, 1.0);
+  ctx.clearColor(0.0, 0.0, 0.0, 0.0);
   ctx.clearDepth(1.0);
   ctx.enable(ctx.DEPTH_TEST);
+  ctx.enable(ctx.BLEND);
   ctx.depthFunc(ctx.LEQUAL);
 
   ctx.clear(ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT);
@@ -165,6 +182,10 @@ function drawScene(
     programInfo.uniformLocations.uPositionOffset,
     horizontalPosition.value
   );
+
+  ctx.uniform4f(programInfo.uniformLocations.uBlendColor, ...blendColor);
+
+  ctx.uniform1f(programInfo.uniformLocations.uTime, time);
 
   ctx.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
   ctx.bindBuffer(ctx.ARRAY_BUFFER, buffers.position);
@@ -203,6 +224,7 @@ onMounted(async () => {
 ${readyVertexShader}`,
     `#version 300 es
 precision highp float;
+precision mediump int;
 ${readyFragmentShader}`
   );
 
@@ -216,6 +238,8 @@ ${readyFragmentShader}`
     uniformLocations: {
       uResolution: ctx.getUniformLocation(shaderProgram, 'uResolution'),
       uPositionOffset: ctx.getUniformLocation(shaderProgram, 'uPositionOffset'),
+      uBlendColor: ctx.getUniformLocation(shaderProgram, 'uBlendColor'),
+      uTime: ctx.getUniformLocation(shaderProgram, 'uTime'),
     },
   };
 

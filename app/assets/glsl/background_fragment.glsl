@@ -1,15 +1,17 @@
 out vec4 outColor;
 uniform vec2 uResolution;
 uniform float uPositionOffset;
+uniform vec4 uBlendColor;
+uniform float uTime;
 
 void main() {
   float u_zoom = 50.0; // Grid density/scale
   float u_radius = 0.15; // Dot size
   float positionOffsetProjection = 0.0005;
-  gln_tFBMOpts opts = gln_tFBMOpts(0.9, 0.2, 1.5, 2.0, 0.6, 5, false, false);
+  float blink = sin((uTime / 1000.0) * 7.0);
+  gln_tFBMOpts opts = gln_tFBMOpts(0.9, 0.2, 1.5, 2.0, 0.7 + (blink * 0.25), 5, false, false);
 
-  vec3 fromColor = vec3(0.01);
-  vec3 toColor = vec3(0.92, 0.21, 0.35);
+  vec4 fromColor = vec4(0.01);
 
   vec2 st = gl_FragCoord.xy / uResolution;
 
@@ -29,7 +31,7 @@ void main() {
   // Smooth circle edge
   float dot = smoothstep(u_radius, u_radius - 0.05, dist);
 
-  vec3 color = (toColor * n) + (fromColor * (1.0 - n));
+  vec4 color = (uBlendColor * n) + (fromColor * (1.0 - n));
 
-  outColor = vec4(vec3(dot) * color, 1.0);
+  outColor = vec4(vec4(dot) * color);
 }
