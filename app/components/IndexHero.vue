@@ -196,7 +196,7 @@ onMounted(() => {
         :key="index"
         :class="
           cn(
-            `shrink-0 font-slider text-9xl text-center select-none w-[70%] transition-[font-weight]`
+            `shrink-0 font-slider text-7xl md:text-9xl text-center select-none w-[70%] transition-[font-weight]`
           )
         "
         :style="{
@@ -208,7 +208,7 @@ onMounted(() => {
         <template v-if="item.type === 'text'">
           <button
             :data-drag="isDragging"
-            class="relative group/hero-item-text scale-100 data-[drag=false]:active:scale-90 transition-all focus-visible:outline-0 data-[drag=false]:cursor-pointer whitespace-nowrap"
+            class="relative group/hero-item-text scale-100 data-[drag=false]:active:scale-90 transition-all focus-visible:outline-0 data-[drag=false]:cursor-pointer md:whitespace-nowrap"
           >
             {{ item.title }}
             <div
